@@ -9,9 +9,24 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import json
+import os
 from pathlib import Path
 
+import environ
+from dotenv import load_dotenv
+
+load_dotenv()
+
+env = environ.Env(
+    DATABASE_URL=(str, ""),
+    CORS_ORIGIN_WHITELIST=(str, '["http://localhost:3000", "https://collabamigo.xyz"]'),
+    ALLOWED_HOSTS=(str, '["localhost", "blooming-peak-53825.herokuapp.com"]'),
+    DEVELOPMENT=(bool, True),
+)
+
+DEVELOPMENT = env("DEVELOPMENT")
+DEBUG = DEVELOPMENT
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,13 +35,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j56cl#@oealsocisyn42naosy4^vif5hmh_ur0u3lu4amr@np+'
+CORS_ORIGIN_WHITELIST = json.loads(env("CORS_ORIGIN_WHITELIST"))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = "TESTSEcret" if DEVELOPMENT else env('SECRET_KEY')
 
+ALLOWED_HOSTS = json.loads(env("ALLOWED_HOSTS"))
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Application definition
 
@@ -38,9 +58,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'macaroonApp.apps.MacaroonConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,11 +99,15 @@ WSGI_APPLICATION = 'macaroonBackend.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
+if env("DATABASE_URL"):
+    DATABASES["default"] = env.db("DATABASE_URL")
+    DATABASES["default"]["ATOMIC_REQUESTS"] = True
+    DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
 
 # Password validation
@@ -114,10 +141,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = 'static/'
+APPEND_SLASH = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

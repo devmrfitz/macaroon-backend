@@ -1,0 +1,50 @@
+name: Deploy to Heroku
+'on':
+  push:
+    branches:
+      - master
+jobs:
+
+  Deploy-testing-to-Heroku:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Adding local bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - uses: actions/checkout@v2
+
+#      Needed when running on a new machine for the first time
+      - name: Install system dependencies
+        run: yes | sudo apt-get install libpq-dev python3-wheel gcc
+
+      - name: Installing poetry
+        run: which poetry || curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+
+      - name: Installing pip packages
+        run: poetry install
+
+      - name: Creating environment variables
+        run: echo "SECRET_KEY=a">.env && echo "EMAIL=a">>.env && echo "CICD=True">>.env
+
+      - name: Setting git credentials
+        run: git config --global user.email "watsonhex@gmail.com" && git config --global user.name "Github runner"
+
+      - name: Run makemigrations
+        run: yes | poetry run python manage.py makemigrations
+
+      - name: Creating requirements.txt
+        run: poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+      - name: Git add and commit
+        run: git add . && if [[ $(git status -s) ]]; then git commit -m "Migrations"; fi
+
+      - name: Heroku deploy
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP: ${{ secrets.HEROKU_APP_TESTING }}
+        run: dpl --provider=heroku --app=$HEROKU_APP --api-key=$HEROKU_API_KEY
+        shell: bash -ieo pipefail {0}
+
+      - name: Pushing to Github
+        run: git pull && git push
+
