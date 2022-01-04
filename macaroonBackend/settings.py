@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'macaroonApp.apps.MacaroonConfig',
     'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
