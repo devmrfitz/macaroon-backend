@@ -20,8 +20,8 @@ load_dotenv()
 
 env = environ.Env(
     DATABASE_URL=(str, ""),
-    CORS_ORIGIN_WHITELIST=(str, '["http://localhost:3000", "https://collabamigo.xyz"]'),
-    ALLOWED_HOSTS=(str, '["localhost", "blooming-peak-53825.herokuapp.com"]'),
+    CORS_ORIGIN_WHITELIST=(str, '["http://localhost:3000"]'),
+    ALLOWED_HOSTS=(str, '["localhost", "marked-money.herokuapp.com"]'),
     DEVELOPMENT=(bool, True),
 )
 
