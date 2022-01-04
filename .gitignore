@@ -1,1 +1,12 @@
-.idea
+.env
+
+.idea/
+.vscode/
+
+**/__pycache__/
+
+venv
+
+%USERPROFILE%/
+
+db.sqlite3
