@@ -16,6 +16,11 @@ Markdown = "^3.3.6"
 django-filter = "^21.1"
 psycopg2 = "^2.9.3"
 gunicorn = "^20.1.0"
+PyJWT = "^2.3.0"
+pycryptodomex = "^3.12.0"
+cryptography = "^36.0.1"
+google-auth = "^2.3.3"
+requests = "^2.27.1"
 
 [tool.poetry.dev-dependencies]
 

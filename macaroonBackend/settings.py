@@ -23,6 +23,7 @@ env = environ.Env(
     CORS_ORIGIN_WHITELIST=(str, '["http://localhost:3000"]'),
     ALLOWED_HOSTS=(str, '["localhost", "marked-money.herokuapp.com"]'),
     DEVELOPMENT=(bool, True),
+    GAUTH_CLIENT_ID=(str, '239101865604-ur1qtro2fdnn75p31fhrumhqqvl5e445.apps.googleusercontent.com'),
 )
 
 DEVELOPMENT = env("DEVELOPMENT")
@@ -57,10 +58,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework.authtoken',
     'macaroonApp.apps.MacaroonConfig',
     'corsheaders',
     'rest_framework',
+
 ]
+
+REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
+    'rest_framework.permissions.AllowAny'
+],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'macaroonApp.authentication.DummyAuthentication',
+        'macaroonApp.authentication.CustomAuthentication']}
+
+AUTH_USER_MODEL = 'macaroonApp.User'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -110,6 +123,11 @@ if env("DATABASE_URL"):
     DATABASES["default"]["ATOMIC_REQUESTS"] = True
     DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
+TOKEN_VALIDITY_IN_DAYS = 5
+JWT_VALIDITY_IN_DAYS = 5
+
+GAUTH_CLIENT_ID = env("GAUTH_CLIENT_ID")
+JWT_SECRET = "TESTSEcretjydu6d6s5"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
