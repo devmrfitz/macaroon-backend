@@ -30,6 +30,7 @@ class Profile(models.Model):
     public_key = models.CharField(max_length=100, blank=True)
     user = models.OneToOneField(to=settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE, related_name='profile')
+    contacts = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
         return self.id

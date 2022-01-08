@@ -70,8 +70,11 @@ REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': [
 ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
-        'macaroonApp.authentication.DummyAuthentication',
-        'macaroonApp.authentication.CustomAuthentication']}
+        # 'macaroonApp.authentication.DummyAuthentication',
+        'macaroonApp.authentication.CustomAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}
 
 AUTH_USER_MODEL = 'macaroonApp.User'
 

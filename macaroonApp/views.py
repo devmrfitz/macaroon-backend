@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -53,6 +53,26 @@ class ProfileView(viewsets.ModelViewSet):
         id_ = str(uuid.uuid4().hex)
         serializer.save(user=self.request.user,
                         id=id_)
+
+
+class AddContactAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        profile: Profile = request.user.profile
+        contact_email = request.data.get('email')
+        profile.contacts.add(Profile.objects.get(user__email=contact_email))
+        return Response(status=status.HTTP_200_OK)
+
+
+class ListContactsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        profile: Profile = request.user.profile
+        contacts = profile.contacts.all().prefetch_related('user')
+        serializer = ProfileSerializer(contacts, many=True)
+        return Response(serializer.data)
 
 
 class RandomUsername:
