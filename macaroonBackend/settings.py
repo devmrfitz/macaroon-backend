@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 CORS_ORIGIN_WHITELIST = json.loads(env("CORS_ORIGIN_WHITELIST"))
-
+CSRF_TRUSTED_ORIGINS = CORS_ORIGIN_WHITELIST
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 

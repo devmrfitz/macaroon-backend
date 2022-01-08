@@ -7,6 +7,7 @@ import jwt
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from rest_framework import viewsets, status
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -39,7 +40,7 @@ class MoneyForm(APIView):
 class ProfileView(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
-    authentication_classes = [DummyAuthentication, PreSignupAuth]
+    authentication_classes = [BasicAuthentication, DummyAuthentication, PreSignupAuth]
 
     def get_queryset(self):
         user = self.request.user
@@ -50,7 +51,7 @@ class ProfileView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         id_ = str(uuid.uuid4().hex)
-        serializer.save(email=self.request.user,
+        serializer.save(user=self.request.user,
                         id=id_)
 
 
