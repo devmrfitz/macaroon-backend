@@ -30,6 +30,8 @@ class MoneyForm(APIView):
 
     def post(self, request: Request):
         print(request.data, flush=True)
+        publickey = request.data.get('public_key')
+        amount = request.data.get('amount')
 
         return Response(request.data)
 
@@ -44,7 +46,7 @@ class ProfileView(viewsets.ModelViewSet):
         if user.is_superuser:
             return Profile.objects.all()
         else:
-            return Profile.objects.filter(email=user)
+            return Profile.objects.filter(user=user)
 
     def perform_create(self, serializer):
         id_ = str(uuid.uuid4().hex)

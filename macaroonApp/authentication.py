@@ -46,8 +46,8 @@ class DummyAuthentication(authentication.BaseAuthentication):
                 request.headers['Authorization'] == "Token 00000.dummy.00000":
             if request.method in permissions.SAFE_METHODS:
                 Profile.objects.get_or_create(
-                    email=User.objects.get_or_create(
-                        email="dummy.user@macaroon.web.app")[0],
+                    user=User.objects.get_or_create(
+                        user="dummy.user@macaroon.web.app")[0],
                     First_Name="dummy", Last_Name="me", id="dummy")
                 return User.objects.get(email="dummy.user@macaroon.web.app"), None
             else:
