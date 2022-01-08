@@ -61,7 +61,10 @@ class AddContactAPIView(APIView):
     def post(self, request: Request):
         profile: Profile = request.user.profile
         contact_email = request.data.get('email')
-        profile.contacts.add(Profile.objects.get(user__email=contact_email))
+        try:
+            profile.contacts.add(Profile.objects.get(user__email=contact_email))
+        except Profile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_200_OK)
 
 
