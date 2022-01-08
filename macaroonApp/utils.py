@@ -3,6 +3,8 @@ import os
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
+from macaroonBackend.settings import GAUTH_CLIENT_ID
+
 
 def verify_token(token: str) -> tuple:
     try:
