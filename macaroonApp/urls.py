@@ -7,6 +7,7 @@ from . import views
 router = routers.DefaultRouter()
 
 router.register(r'profile', views.ProfileView, 'profile')
+router.register(r'group', views.CustomGroupViewSet, 'profile')
 
 urlpatterns = [
     path('form/', views.MoneyForm.as_view()),

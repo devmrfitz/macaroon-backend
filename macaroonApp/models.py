@@ -21,6 +21,9 @@ class RefreshToken(models.Model):
 class User(AbstractUser):
     email = models.EmailField('email address', blank=True, unique=True)
 
+    def __str__(self):
+        return self.email
+
 
 class Profile(models.Model):
     id = models.CharField(primary_key=True, unique=True,
@@ -33,4 +36,14 @@ class Profile(models.Model):
     contacts = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
-        return self.id
+        return str(self.user)
+
+
+class CustomGroup(models.Model):
+    name = models.CharField(max_length=30)
+    members = models.ManyToManyField(Profile, blank=True, related_name='customGroups')
+    description = models.TextField(blank=True)
+    slug = models.CharField(unique=True, max_length=30)
+
+    def __str__(self):
+        return self.slug

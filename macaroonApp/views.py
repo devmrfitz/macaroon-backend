@@ -15,8 +15,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from macaroonApp.authentication import PreSignupAuth, DummyAuthentication
-from macaroonApp.models import Profile, RefreshToken
-from macaroonApp.serializers import ProfileSerializer
+from macaroonApp.models import Profile, RefreshToken, CustomGroup
+from macaroonApp.serializers import ProfileSerializer, CustomGroupSerializer
 from macaroonApp.utils import verify_token
 from macaroonBackend.settings import JWT_SECRET, JWT_VALIDITY_IN_DAYS
 
@@ -182,3 +182,8 @@ class RefreshJWT(APIView):
                 return JsonResponse({}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return JsonResponse({}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomGroupViewSet(viewsets.ModelViewSet):
+    serializer_class = CustomGroupSerializer
+    queryset = CustomGroup.objects.all().prefetch_related("members")
