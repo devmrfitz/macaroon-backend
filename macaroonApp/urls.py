@@ -15,6 +15,12 @@ urlpatterns = [
     path('refresh/', views.RefreshJWT.as_view()),
     path('contacts/add/', views.AddContactAPIView.as_view()),
     path('contacts/list/', views.ListContactsAPIView.as_view()),
+    path("transactions/sent/", views.TransactionsSent.as_view()),
+    path("transactions/intermediary/", views.TransactionsReceivedAsIntermediary.as_view()),
+    path("transactions/save/", views.SaveTransaction.as_view()),
+    path("payments/sent/", views.FinalPaymentsSent.as_view()),
+    path("payments/received/", views.FinalPaymentsReceived.as_view()),
+    path("payments/save/", views.SaveFinalPayment.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

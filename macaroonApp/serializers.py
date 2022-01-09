@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from rest_framework.relations import SlugRelatedField
 
-from macaroonApp.models import Profile, CustomGroup
+from macaroonApp.models import Profile, CustomGroup, Transaction, FinalPayment
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -20,3 +21,18 @@ class CustomGroupSerializer(serializers.ModelSerializer):
         model = CustomGroup
         fields = ['id', 'name', 'description', 'slug', 'members']
         read_only_fields = ['id', 'members']
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'sender', 'intermediary', 'amount', 'timestamp', "contract_address", "destination", "message", "expiry"]
+        read_only_fields = ['id', ]
+
+
+class FinalPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinalPayment
+        fields = ['id', 'moneySender', 'moneyReceiver', 'amount', 'timestamp', 'message']
+        read_only_fields = ['id', ]

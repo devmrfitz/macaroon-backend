@@ -47,3 +47,24 @@ class CustomGroup(models.Model):
 
     def __str__(self):
         return self.slug
+
+
+class Transaction(models.Model):  # aka contract
+    sender = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='transactions_sent')
+    intermediary = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='transactions_received')
+    destination = models.ManyToManyField(Profile, blank=True)
+    amount = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    contract_address = models.CharField(max_length=200, blank=True)
+    message = models.TextField(blank=True)
+    expiry = models.DateField(blank=True, null=True)
+
+
+class FinalPayment(models.Model):
+    moneySender = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='contracts_created')
+    moneyReceiver = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='intermediary_received')
+    amount = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    message = models.TextField(blank=True)
+    # transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='payments')
+

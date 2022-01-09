@@ -15,8 +15,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from macaroonApp.authentication import PreSignupAuth, DummyAuthentication
-from macaroonApp.models import Profile, RefreshToken, CustomGroup
-from macaroonApp.serializers import ProfileSerializer, CustomGroupSerializer
+from macaroonApp.models import Profile, RefreshToken, CustomGroup, Transaction, FinalPayment
+from macaroonApp.serializers import ProfileSerializer, CustomGroupSerializer, TransactionSerializer, FinalPaymentSerializer
 from macaroonApp.utils import verify_token
 from macaroonBackend.settings import JWT_SECRET, JWT_VALIDITY_IN_DAYS
 
@@ -31,10 +31,24 @@ class MoneyForm(APIView):
 
     def post(self, request: Request):
         print(request.data, flush=True)
-        publickey = request.data.get('public_key')
-        amount = request.data.get('amount')
+        data = request.data
+        try:
+            data["addressTo"] = User.objects.get(email=data["addressTo"]).profile.public_key
+        except User.DoesNotExist:
+            pass
 
-        return Response(request.data)
+        try:
+            markedFor = CustomGroup.objects.get(slug=data["markedFor"]).members.all()
+            data["markedFor"] = []
+            for member in markedFor:
+                data["markedFor"].append(member.public_key)
+        except CustomGroup.DoesNotExist:
+            try:
+                data["markedFor"] = [User.objects.get(email=data["addressTo"]).profile.public_key]
+            except User.DoesNotExist:
+                pass
+
+        return Response(data)
 
 
 class ProfileView(viewsets.ModelViewSet):
@@ -187,3 +201,87 @@ class RefreshJWT(APIView):
 class CustomGroupViewSet(viewsets.ModelViewSet):
     serializer_class = CustomGroupSerializer
     queryset = CustomGroup.objects.all().prefetch_related("members")
+
+
+class TransactionViewSet(viewsets.ModelViewSet):
+    serializer_class = TransactionSerializer
+    queryset = Transaction.objects.all()
+
+
+class TransactionsSent(APIView):
+    def get(self, request: Request):
+        transactions = Transaction.objects.filter(sender=request.user.profile)
+        response = TransactionSerializer(transactions, many=True).data
+        for transaction in response:
+            transaction["sender_email"] = Profile.objects.get(id=transaction["sender"]).user.email
+            transaction["destination_email"] = []
+            for destination in transaction["destination"]:
+                destination_obj = Profile.objects.get(id=destination)
+                transaction["destination_email"].append(destination_obj.user.email)
+        return Response(response)
+
+
+class TransactionsReceivedAsIntermediary(APIView):
+    def get(self, request: Request):
+        transactions = Transaction.objects.filter(intermediary=request.user.profile)
+        response = TransactionSerializer(transactions, many=True).data
+        for transaction in response:
+            transaction["destination_email"] = []
+            transaction["sender_email"] = Profile.objects.get(id=transaction["sender"]).user.email
+            for destination in transaction["destination"]:
+                destination_obj = Profile.objects.get(id=destination)
+                transaction["destination_email"].append(destination_obj.user.email)
+        return Response(response)
+
+
+class SaveTransaction(APIView):
+    def post(self, request: Request):
+        data: dict = request.data
+        data["sender"] = request.user.profile.id
+        moneyReceiver_public_key = data["intermediary_public_key"]
+        data.pop("intermediary_public_key")
+        data["intermediary"] = Profile.objects.get(public_key=moneyReceiver_public_key).id
+
+
+        destination_public_keys = data["destination_public_keys"]
+        data.pop("destination_public_keys")
+        data["destination"] = []
+        for destination_public_key in destination_public_keys:
+            data["destination"].append(Profile.objects.get(public_key=destination_public_key).id)
+        serializer = TransactionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FinalPaymentsSent(APIView):
+    def get(self, request: Request):
+        transactions = FinalPayment.objects.filter(moneySender=request.user.profile)
+        response = FinalPaymentSerializer(transactions, many=True).data
+        for transaction in response:
+            transaction["moneySender_email"] = Profile.objects.get(id=transaction["moneySender"]).user.email
+        return Response(response)
+
+
+class FinalPaymentsReceived(APIView):
+    def get(self, request: Request):
+        transactions = FinalPayment.objects.filter(moneyReceiver=request.user.profile)
+        response = FinalPaymentSerializer(transactions, many=True).data
+        for transaction in response:
+            transaction["moneySender_email"] = Profile.objects.get(id=transaction["moneySender"]).user.email
+        return Response(response)
+
+
+class SaveFinalPayment(APIView):
+    def post(self, request: Request):
+        data: dict = request.data
+        data["creator"] = request.user.profile
+        intermediary_public_key = data["intermediary_public_key"]
+        data.pop("intermediary_public_key")
+        data["intermediary"] = Profile.objects.get(public_key=intermediary_public_key).id
+        serializer = FinalPaymentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
