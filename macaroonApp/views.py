@@ -276,10 +276,10 @@ class FinalPaymentsReceived(APIView):
 class SaveFinalPayment(APIView):
     def post(self, request: Request):
         data: dict = request.data
-        data["creator"] = request.user.profile
-        intermediary_public_key = data["intermediary_public_key"]
-        data.pop("intermediary_public_key")
-        data["intermediary"] = Profile.objects.get(public_key=intermediary_public_key).id
+        data["moneySender"] = request.user.profile.id
+        intermediary_public_key = data["moneyReceiver_public_key"]
+        data.pop("moneyReceiver_public_key")
+        data["moneyReceiver"] = Profile.objects.get(public_key=intermediary_public_key).id
         serializer = FinalPaymentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
