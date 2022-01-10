@@ -289,7 +289,7 @@ class SaveFinalPayment(APIView):
         # Decrement amount in contract
         contract = Transaction.objects.get(contract_address=data["current_contract_address"],
                                            intermediary=request.user.profile)
-        contract.amount -= data["amount"]
+        contract.amount = str(float(contract.amount) - float(data["amount"]))
         contract.save()
         data.pop("current_contract_address")
 
