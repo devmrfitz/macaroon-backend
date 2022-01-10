@@ -32,22 +32,25 @@ class MoneyForm(APIView):
     def post(self, request: Request):
         print(request.data, flush=True)
         data = request.data
+        data["raw"] = 0
         try:
             data["addressTo"] = User.objects.get(email=data["addressTo"]).profile.public_key
+            data["raw"] += 0
         except User.DoesNotExist:
-            pass
+            data["raw"] += 1
 
         try:
             markedFor = CustomGroup.objects.get(slug=data["markedFor"]).members.all()
             data["markedFor"] = []
             for member in markedFor:
                 data["markedFor"].append(member.public_key)
+            data["raw"] += 0
         except CustomGroup.DoesNotExist:
-            print("here", flush=True)
             try:
                 data["markedFor"] = [User.objects.get(email=data["markedFor"]).profile.public_key]
+                data["raw"] += 0
             except User.DoesNotExist:
-                pass
+                data["raw"] += 1
 
         return Response(data)
 
@@ -282,6 +285,14 @@ class SaveFinalPayment(APIView):
         intermediary_public_key = data["moneyReceiver_public_key"]
         data.pop("moneyReceiver_public_key")
         data["moneyReceiver"] = Profile.objects.get(public_key=intermediary_public_key).id
+
+        # Decrement amount in contract
+        contract = Transaction.objects.get(contract_address=data["current_contract_address"],
+                                           intermediary=request.user.profile)
+        contract.amount -= data["amount"]
+        contract.save()
+        data.pop("current_contract_address")
+
         serializer = FinalPaymentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
