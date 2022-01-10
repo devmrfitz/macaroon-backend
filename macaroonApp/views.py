@@ -43,8 +43,9 @@ class MoneyForm(APIView):
             for member in markedFor:
                 data["markedFor"].append(member.public_key)
         except CustomGroup.DoesNotExist:
+            print("here", flush=True)
             try:
-                data["markedFor"] = [User.objects.get(email=data["addressTo"]).profile.public_key]
+                data["markedFor"] = [User.objects.get(email=data["markedFor"]).profile.public_key]
             except User.DoesNotExist:
                 pass
 
@@ -214,6 +215,7 @@ class TransactionsSent(APIView):
         response = TransactionSerializer(transactions, many=True).data
         for transaction in response:
             transaction["sender_email"] = Profile.objects.get(id=transaction["sender"]).user.email
+            transaction["intermediary_email"] = Profile.objects.get(id=transaction["intermediary"]).user.email
             transaction["destination_email"] = []
             for destination in transaction["destination"]:
                 destination_obj = Profile.objects.get(id=destination)
